@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using UnityEngine.Audio;
 
 /// <summary>
 /// 撥放音效用
@@ -13,11 +14,9 @@ public class AudioService : MonoSingleton<AudioService>
     private AudioSource mSFXaudioSource;
     /// <summary> 第三個音效 </summary>
     private AudioSource mSFXaudioSource2;
-
     /// <summary> 題目音效，完成可+回傳值 </summary>
     private AudioSource mOptionAudioSource;
-    /// <summary> 錄音用 </summary>
-    private AudioSource mRecordAudioSource;
+
 
     /// <summary> 音效complete </summary>
     Coroutine mSFXCoroutine;
@@ -41,13 +40,6 @@ public class AudioService : MonoSingleton<AudioService>
     bool isFadeOut;
     float targetVolume;
 
-    /// <summary> 麥克風裝置 </summary>
-    string devices;
-    /// <summary> 錄音品質 </summary>
-    int sFrequency = 22050;
-    /// <summary> 麥克風數量 </summary>
-    int deviceCount;
-
     protected override void Awake()
     {
         base.Awake();
@@ -55,8 +47,6 @@ public class AudioService : MonoSingleton<AudioService>
         mSFXaudioSource = this.gameObject.AddComponent<AudioSource>();
         mOptionAudioSource = this.gameObject.AddComponent<AudioSource>();
         mSFXaudioSource2 = this.gameObject.AddComponent<AudioSource>();
-        mRecordAudioSource = this.gameObject.AddComponent<AudioSource>();
-        SetMicrophone();
     }
 
     #region 背景音樂
@@ -230,128 +220,6 @@ public class AudioService : MonoSingleton<AudioService>
     }
     #endregion
 
-    #region 錄音
-    //抓取麥克風
-    private void SetMicrophone()
-    {
-        if (devices != null) return;
-
-        string[] ms = Microphone.devices;
-        deviceCount = ms.Length;
-
-        if (deviceCount == 0)
-        {
-            Debug.LogError("Microphone Not found");
-            devices = "";
-        }
-        else
-        {
-            devices = ms[0];
-            Debug.Log("麥克風 : " + devices);
-        }
-    }
-
-    public float GetMicrophoneTimes()
-    {
-        return mRecordAudioSource.time;
-    }
-
-    //開始錄音
-    public void StartRecord(int sec = 90)
-    {
-        mRecordAudioSource.Stop();
-        mRecordAudioSource.loop = false;
-        mRecordAudioSource.mute = true;
-        mRecordAudioSource.clip = Microphone.Start(devices, false, sec, sFrequency);
-        Debug.Log(string.Format("開始錄音 {0} {1} {2} {3}", devices, false, sec, sFrequency));
-    }
-
-    //關閉錄音
-    public void StopRecord()
-    {
-        if (!Microphone.IsRecording(null))
-        {
-            return;
-        }
-        Debug.Log("關閉錄音");
-
-        EndRecording(mRecordAudioSource, devices);
-        Microphone.End(devices);
-        mRecordAudioSource.Stop();
-    }
-
-    void EndRecording(AudioSource audS, string deviceName)
-    {
-        //Capture the current clip data
-        AudioClip recordedClip = audS.clip;
-        var position = Microphone.GetPosition(deviceName);
-
-        Debug.Log(string.Format("deviceName : {0} / position : {1}", deviceName, position));
-
-        var soundData = new float[recordedClip.samples * recordedClip.channels];
-        recordedClip.GetData(soundData, 0);
-
-        //Create shortened array for the data that was used for recording
-        var newData = new float[position * recordedClip.channels];
-
-        Debug.Log("" + newData.Length);
-
-        //Copy the used samples to a new array
-        for (int i = 0; i < newData.Length; i++)
-        {
-            newData[i] = soundData[i];
-        }
-
-        //One does not simply shorten an AudioClip,
-        //    so we make a new one with the appropriate length
-        var newClip = AudioClip.Create(recordedClip.name, position, recordedClip.channels, recordedClip.frequency, false);
-
-        //Give it the data from the old clip
-        newClip.SetData(newData, 0);
-
-        //Replace the old clip
-        AudioClip.Destroy(recordedClip);
-        audS.clip = newClip;
-    }
-
-    public void PlayRecord(Action action)
-    {
-        if (mRecordAudioSource.clip == null) return;
-
-        Debug.Log("撥放錄音:" + mRecordAudioSource.clip.name);
-        mRecordAudioSource.mute = false;
-        mRecordAudioSource.loop = false;
-        mRecordAudioSource.Play();
-
-        if (mRecordCoroutine != null) StopCoroutine(mRecordCoroutine);
-        mRecordCoroutine = StartCoroutine(RecordOnComplete(mRecordAudioSource.clip.length, action));
-    }
-
-    private IEnumerator RecordOnComplete(float times, Action action)
-    {
-        yield return new WaitForSeconds(times);
-        action?.Invoke();
-    }
-
-    /// <summary> 停止試聽錄音檔 </summary>
-    public void StopPlayingRecord()
-    {
-        mRecordAudioSource.Stop();
-        if (mRecordCoroutine != null) StopCoroutine(mRecordCoroutine);
-    }
-
-    public float GetRecoredLength()
-    {
-        if (mRecordAudioSource.clip == null)
-        {
-            Debug.LogError("沒有錄音檔");
-            return 0;
-        }
-        return mRecordAudioSource.clip.length;
-    }
-
-    #endregion
-
     public void PasueAnsAudio()
     {
         mOptionAudioSource.Pause();
@@ -425,6 +293,5 @@ public class AudioService : MonoSingleton<AudioService>
                 mBGMaudioSource.volume = volume;
             }
         }
-
     }
 }

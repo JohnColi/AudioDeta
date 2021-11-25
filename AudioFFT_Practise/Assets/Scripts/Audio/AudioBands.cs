@@ -1,9 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Audio;
 
 public class AudioBands : MonoBehaviour
 {
+    public AudioSource _audioSource;
+
     //Audio Peer
     [SerializeField] FFTWindow FFT_Window;
     const int _spectrumDtatSize = 512;
@@ -134,8 +137,8 @@ public class AudioBands : MonoBehaviour
     private void GetSpectrumAudioSource()
     {
         // 0 left channel, 1 right channel.
-        AudioListener.GetSpectrumData(_samplesLeft, 0, FFTWindow.Rectangular);
-        AudioListener.GetSpectrumData(_samplesRight, 1, FFTWindow.Rectangular);
+        _audioSource.GetSpectrumData(_samplesLeft, 0, FFTWindow.Rectangular);
+        _audioSource.GetSpectrumData(_samplesRight, 1, FFTWindow.Rectangular);
     }
 
     /// <summary> Bands </summary>

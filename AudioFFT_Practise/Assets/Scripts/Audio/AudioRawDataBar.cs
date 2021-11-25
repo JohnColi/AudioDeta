@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class AudioBar : MonoBehaviour
+
+public class AudioRawDataBar : MonoBehaviour
 {
     [SerializeField] AudioBands _audioBands;
     public Image barPrb;
     public float h_space;
     public float maxScale = 400;
-    
-    RectTransform[] bars;
 
+    RectTransform[] bars;
 
     // Start is called before the first frame update
     void Start()
