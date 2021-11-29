@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class MathTest : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        Debug.Log(Mathf.Pow(2, 10));
-    }
+    public Color lerpedColor = Color.white;
+    public Color C1, C2;
 
-    // Update is called once per frame
+    [ColorUsageAttribute(true, true)]
+    public Color colour;
+
     void Update()
     {
-
+        lerpedColor = Color.Lerp(C1, C2, Mathf.PingPong(Time.time, 1));
     }
 }

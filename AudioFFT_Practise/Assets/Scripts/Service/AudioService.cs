@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
-using UnityEngine.Audio;
 
 /// <summary>
 /// 撥放音效用
@@ -10,13 +9,14 @@ using UnityEngine.Audio;
 public class AudioService : MonoSingleton<AudioService>
 {
     private AudioSource mBGMaudioSource;
-    /// <summary> 第二個音效 </summary>
-    private AudioSource mSFXaudioSource;
-    /// <summary> 第三個音效 </summary>
-    private AudioSource mSFXaudioSource2;
-    /// <summary> 題目音效，完成可+回傳值 </summary>
-    private AudioSource mOptionAudioSource;
 
+    /// <summary> 第一的音效 </summary>
+    private AudioSource mSFXaudioSource;
+    /// <summary> UI音效 無法暫停 </summary>
+    private AudioSource mUIaudioSource;
+
+    /// <summary> 題目音效 </summary>
+    private AudioSource mOptionSFXaudio;
 
     /// <summary> 音效complete </summary>
     Coroutine mSFXCoroutine;
@@ -24,32 +24,25 @@ public class AudioService : MonoSingleton<AudioService>
     Coroutine mOptionCoroutine;
     /// <summary> BGM切換用 </summary>
     Coroutine mBgmFadeCoroutine;
-    /// <summary> 錄音用 </summary>
-    Coroutine mRecordCoroutine;
 
-    /// <summary> 第二的音效 </summary>
-    private float mSFXplaytimes;
+    bool isPasue = false;
 
-    /// <summary> 第二的音效 </summary>
-    private Action mSFXevent;
-
-    //淡入淡出
+    #region 淡入淡出
     float mTimer;
     float mFadeTimes;
     bool isFadeIn;
     bool isFadeOut;
     float targetVolume;
+    #endregion
 
-    protected override void Awake()
+    private void Awake()
     {
-        base.Awake();
         mBGMaudioSource = this.gameObject.AddComponent<AudioSource>();
         mSFXaudioSource = this.gameObject.AddComponent<AudioSource>();
-        mOptionAudioSource = this.gameObject.AddComponent<AudioSource>();
-        mSFXaudioSource2 = this.gameObject.AddComponent<AudioSource>();
+        mOptionSFXaudio = this.gameObject.AddComponent<AudioSource>();
+        mUIaudioSource = this.gameObject.AddComponent<AudioSource>();
     }
 
-    #region 背景音樂
     /// <summary>
     /// 塞AudioClip進去撥放音樂檔,可以設定是否循環撥放
     /// </summary>
@@ -65,16 +58,6 @@ public class AudioService : MonoSingleton<AudioService>
             mBGMaudioSource.clip = music;
             mBGMaudioSource.Play();
         }
-    }
-
-    public void PasueMusic()
-    {
-        mBGMaudioSource.Pause();
-    }
-
-    public void ResumeMusic()
-    {
-        mBGMaudioSource.Play();
     }
 
     public void StopMusic()
@@ -106,47 +89,94 @@ public class AudioService : MonoSingleton<AudioService>
         mBGMaudioSource.Play();
         BGMFadeIn(fadeInTimes);
     }
-    #endregion
+
+    #region fade music
+    /// <summary>
+    /// 淡入音樂
+    /// </summary>
+    /// <param name="destVolume"></param>
+    public void FadeInMusic(float destVolume = 1.0f)
+    {
+        StartCoroutine(FadeMusic(destVolume));
+    }
+
+    /// <summary>
+    /// 淡出音樂
+    /// </summary>
+    /// <param name="destVolume"></param>
+    public void FadeOutMusic(float destVolume = 0.3f)
+    {
+        StartCoroutine(FadeMusic(destVolume));
+    }
+
+    /// <summary>
+    /// 等0.1秒
+    /// </summary>
+    private WaitForSeconds m_WaitForPointOneSecond = new WaitForSeconds(0.1f);
+    /// <summary>
+    /// 是否正在fading 音樂
+    /// </summary>
+    private bool m_IsFadingMusic = false;
+    /// <summary>
+    /// Fading 音樂complete
+    /// </summary>
+    public System.Action OnFadeMusicCompleteEvent;
+
+    private IEnumerator FadeMusic(float destVolume)
+    {
+        Debug.Log("fadeMusic, destVolume : " + destVolume + " , isFadingMusic : " + m_IsFadingMusic + " , currVolume : " + mBGMaudioSource.volume);
+        while (m_IsFadingMusic)
+        {
+            yield return m_WaitForPointOneSecond;
+        }
+
+        m_IsFadingMusic = true;
+
+        if (mBGMaudioSource.volume > destVolume)
+        {
+            while (mBGMaudioSource.volume > destVolume)
+            {
+                mBGMaudioSource.volume -= 0.1f;
+                yield return m_WaitForPointOneSecond;
+            }
+        }
+        else if (mBGMaudioSource.volume < destVolume)
+        {
+            while (mBGMaudioSource.volume < destVolume)
+            {
+                mBGMaudioSource.volume += 0.1f;
+                yield return m_WaitForPointOneSecond;
+            }
+        }
+
+        m_IsFadingMusic = false;
+        if (OnFadeMusicCompleteEvent != null)
+            OnFadeMusicCompleteEvent();
+
+    }
+
+    #endregion fade music
 
     #region 音效
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="clip"></param>
-    /// <param name="action"></param>
-    /// <param name="times"> 開始撥放時間 </param>
-    public void PlaySound(AudioClip clip, Action action = null, float times = 0)
+    public void PlaySound(AudioClip clip, Action action = null)
     {
+        float clipLength = 1f;
         if (mSFXaudioSource != null)
         {
             if (mSFXaudioSource.isPlaying)
                 mSFXaudioSource.Stop();
 
             mSFXaudioSource.clip = clip;
-            mSFXaudioSource.time = times;
             mSFXaudioSource.Play();
-
-            if (action == null) return;
-            mSFXevent = action;
-            if (mSFXCoroutine != null) StopCoroutine(mSFXCoroutine);
-            float f = clip.length - times;
-            //Debug.Log(string.Format("clip length: {0}, play times: {1}, time left: {2}", clip.length, times, f));
-            mSFXCoroutine = StartCoroutine(SoundOnComplete(f, action));
+            clipLength = clip.length;
         }
-    }
+        else
+        {
+            Debug.LogError("PlaySound, clip is null");
+        }
 
-    public void PasueSound()
-    {
-        mSFXaudioSource.Pause();
-        mSFXplaytimes = mSFXaudioSource.time;
-        StopCoroutine(mSFXCoroutine);
-    }
-
-    public void ResumeSound()
-    {
-        mSFXaudioSource.Play();
         if (mSFXCoroutine != null) StopCoroutine(mSFXCoroutine);
-        mSFXCoroutine = StartCoroutine(SoundOnComplete(mSFXplaytimes, mSFXevent));
+        mSFXCoroutine = StartCoroutine(SoundOnComplete(mSFXaudioSource, clipLength, action));
     }
 
     public void StopSound()
@@ -158,80 +188,143 @@ public class AudioService : MonoSingleton<AudioService>
             StopCoroutine(mSFXCoroutine);
     }
 
-    IEnumerator SoundOnComplete(float times, Action action)
-    {
-        yield return new WaitForSeconds(times);
-        action();
-    }
-
     public void SetSoundVolume(float value)
     {
         mSFXaudioSource.volume = value;
     }
+    #endregion
 
-    public void PlayNewSound(AudioClip clip)
+    #region UI的音效
+    /// <summary>
+    /// UI音效，沒有call back，無法暫停
+    /// </summary>
+    public void PlayUiSound(AudioClip clip)
     {
-        if (mSFXaudioSource2 != null)
+        if (clip == null)
         {
-            if (mSFXaudioSource2.isPlaying)
-                mSFXaudioSource2.Stop();
+            Debug.LogError("PlayNewSound, clip == null");
+            return;
         }
 
-        mSFXaudioSource2.clip = clip;
-        mSFXaudioSource2.Play();
-        Debug.Log("play audio " + clip.name);
+        if (mUIaudioSource != null)
+        {
+            if (mUIaudioSource.isPlaying)
+                mUIaudioSource.Stop();
+        }
+
+        mUIaudioSource.clip = clip;
+        mUIaudioSource.Play();
+
+        //if (mSFXCoroutine2 != null) StopCoroutine(mSFXCoroutine2);
+        //mSFXCoroutine2 = StartCoroutine(SoundOnComplete(mSFXaudioSource2, 0f, action));
     }
 
-    public float GetSoundTime()
+    public void SetSound2Volume(float value)
     {
-        return mSFXaudioSource.time;
+        mUIaudioSource.volume = value;
     }
+
     #endregion
 
     #region 音效題目
     public void PlayAnsAudio(AudioClip clip, Action action)
     {
-        mOptionAudioSource.clip = clip;
-        mOptionAudioSource.Play();
-
-        BGMFadeOut();
+        float clipLength = 1f;
+        if (clip != null)
+        {
+            mOptionSFXaudio.clip = clip;
+            mOptionSFXaudio.Play();
+            clipLength = clip.length;
+            BGMFadeOut();
+        }
+        else
+        {
+            Debug.LogError("PlayAnsAudio, clip is null");
+        }
 
         if (mOptionCoroutine != null) StopCoroutine(mOptionCoroutine);
-        mOptionCoroutine = StartCoroutine(AudioOnComplete(clip.length, action));
+        mOptionCoroutine = StartCoroutine(AudioOnComplete(mOptionSFXaudio, clipLength, action));
+    }
+    #endregion
+
+    //
+    IEnumerator AudioOnComplete(AudioSource audioSouce, float times, Action action)
+    {
+        BGMFadeIn();
+
+        while (audioSouce.isPlaying || isPasue)
+        {
+            yield return null;
+        }
+
+        action?.Invoke();
+        audioSouce.clip = null;
+        yield break;
+    }
+
+    //
+    IEnumerator SoundOnComplete(AudioSource audioSouce, float times, Action action)
+    {
+        if (action == null)
+            yield break;
+
+        while (audioSouce.isPlaying || isPasue)
+        {
+            //Debug.LogFormat("isPlaying: {0} , isPasue: {1}", audioSouce.isPlaying, isPasue);
+            yield return null;
+        }
+        //Debug.LogFormat("音效播完 {0} , isPasue : {1}", audioSouce.isPlaying, isPasue);
+
+        action?.Invoke();
+        audioSouce.clip = null;
+        yield break;
+    }
+
+    public void PasueAllSoundAudio()
+    {
+        //Debug.Log(string.Format("<color=#00ffff> --- Pasue All Sound Audio --- </color>"));
+        isPasue = true;
+        mOptionSFXaudio.Pause();
+        mSFXaudioSource.Pause();
+        //mSFXaudioSource2.Pause();
+    }
+
+    public void ResumeAllSoundAudio()
+    {
+        //Debug.Log(string.Format("<color=#00ffff> --- Resume All Sound Audio --- </color>"));
+        isPasue = false;
+        if (mOptionSFXaudio.clip != null)
+            mOptionSFXaudio.Play();
+        if (mSFXaudioSource.clip != null)
+            mSFXaudioSource.Play();
+        //if (mSFXaudioSource2.clip != null)
+        //    mSFXaudioSource2.Play();
     }
 
     public void StopAnsAudio()
     {
-        mOptionAudioSource.Stop();
-        mOptionAudioSource.clip = null;
+        isPasue = false;
+        mOptionSFXaudio.Stop();
+        mOptionSFXaudio.clip = null;
         BGMFadeIn();
 
         if (mOptionCoroutine != null)
             StopCoroutine(mOptionCoroutine);
     }
 
-    IEnumerator AudioOnComplete(float times, Action action)
+    private void ClearAudio()
     {
-        yield return new WaitForSeconds(times);
-        BGMFadeIn();
-        action?.Invoke();
-        mOptionAudioSource.clip = null;
-        yield break;
-    }
-    #endregion
+        if (mSFXCoroutine != null)
+            StopCoroutine(mSFXCoroutine);
+        if (mOptionCoroutine != null)
+            StopCoroutine(mOptionCoroutine);
+        if (mBgmFadeCoroutine != null)
+            StopCoroutine(mBgmFadeCoroutine);
 
-    public void PasueAnsAudio()
-    {
-        mOptionAudioSource.Pause();
-        mSFXaudioSource.Pause();
-    }
-
-    public void ResumeAnsAudio()
-    {
-        if (mOptionAudioSource.clip != null)
-            mOptionAudioSource.Play();
-        if (mSFXaudioSource.clip != null)
-            mSFXaudioSource.Play();
+        mBGMaudioSource.clip = null;
+        mSFXaudioSource.clip = null;
+        mUIaudioSource.clip = null;
+        mOptionSFXaudio.clip = null;
     }
 
     /// <summary>

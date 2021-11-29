@@ -92,7 +92,7 @@ Material:
     - _ZWrite: 1
     m_Colors:
     - Color_: {r: 3.8933325, g: 4, b: 0, a: 0}
-    - _AlbdeoColor: {r: 0.6211448, g: 0, b: 1.0592737, a: 0}
+    - _AlbdeoColor: {r: 0.4392157, g: 0, b: 0.7490196, a: 0}
     - _BaseColor: {r: 0, g: 1, b: 0.48774195, a: 1}
     - _Color: {r: 0, g: 1, b: 0.48774195, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 0}

@@ -2,14 +2,8 @@
 
 public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-
 	private static T s_Instance;
 	private static bool s_IsDestroyed;
-
-	protected virtual void Awake()
-	{
-
-	}
 
 	public static bool IsNull()
 	{
@@ -36,16 +30,5 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
 
 			return s_Instance;
 		}
-	}
-
-	protected virtual void OnDestroy()
-	{
-		// if (s_Instance)
-		// 	Destroy(s_Instance);
-
-		// s_Instance = null;
-		// s_IsDestroyed = true;
-
-		//Debug.LogError("OnDestroy  ,name:" + typeof(T).Name);
 	}
 }

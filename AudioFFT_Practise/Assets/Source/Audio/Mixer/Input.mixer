@@ -20,7 +20,7 @@ AudioMixerGroupController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: MicorPhone
+  m_Name: MicroPhone
   m_AudioMixer: {fileID: 24100000}
   m_GroupID: 795ab63d74b43c04fa18f32fcb8c5447
   m_Children: []

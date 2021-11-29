@@ -1,17 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
+/// <summary>
+/// 
+/// </summary>
 public class Bands64 : MonoBehaviour
 {
-    [SerializeField] AudioBands _audioBands;
-    public Image barPrb;
+    [SerializeField] AudioFFT64 _audioBands;
+    public GameObject barPrb;
+    public Transform tsf_bar;
+
     public float h_space;
 
-    RectTransform[] bars;
+    Transform[] bars;
 
-    [Header("")]
+    [SerializeField] Gradient _gradient;
     [SerializeField] bool _uesBuffer;
     [SerializeField] float maxScale = 400;
 
@@ -26,38 +30,48 @@ public class Bands64 : MonoBehaviour
 
     void Update()
     {
-        for (int i = 0; i < _audioBands.frequencyCount; i++)
-        {
-            var v2 = bars[i].sizeDelta;
-            if (_uesBuffer)
-                v2.y = _audioBands._bandBuffer[i] * maxScale;
-            else
-                v2.y = _audioBands._freoBand[i] * maxScale;
+        //for (int i = 0; i < _audioBands.frequencyCount; i++)
+        //{
+        //    var v2 = bars[i].sizeDelta;
+        //    if (_uesBuffer)
+        //        v2.y = 1 + _audioBands._bandBuffer[i] * maxScale;
+        //    else
+        //        v2.y = 1 + _audioBands._freoBand[i] * maxScale;
 
-            bars[i].sizeDelta = v2;
-        }
+        //    bars[i].sizeDelta = v2;
+        //}
     }
+
 
     [ContextMenu("Creat Base Bar")]
     private void CreatBaseBar()
     {
         DeleteBaseBar();
 
-        float w = barPrb.rectTransform.rect.width;
-        for (int i = 0; i < _audioBands.frequencyCount; i++)
+        float w = barPrb.GetComponent<MeshRenderer>().bounds.size.x;
+        float count = (int)_audioBands.frequencyCount;
+
+        for (int i = 0; i < count; i++)
         {
-            var go = Instantiate(barPrb, this.transform);
-            go.name = "Hz_" + i.ToString("000");
-            go.transform.position = transform.position + (Vector3.right * i * (w + h_space));
+            var go = Instantiate(barPrb, tsf_bar);
+            go.name = "Band_" + i.ToString("00");
+            go.transform.position = tsf_bar.position + (Vector3.right * (w + h_space) * (i - count / 2f));
+            float time = 1f / count;
+
+            var r = go.GetComponent<MeshRenderer>();
+            var m = new Material(r.sharedMaterial);
+            m.SetColor("_AlbdeoColor", _gradient.Evaluate(time * i));
+            r.sharedMaterial = m;
         }
     }
+
     [ContextMenu("Delte Base Bar")]
     private void DeleteBaseBar()
     {
-        int count = transform.childCount;
+        int count = tsf_bar.childCount;
         for (int i = count - 1; i >= 0; i--)
         {
-            DestroyImmediate(transform.GetChild(i).gameObject);
+            DestroyImmediate(tsf_bar.GetChild(i).gameObject);
         }
     }
 }

@@ -2,20 +2,46 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Audio;
 
 [RequireComponent(typeof(AudioSource))]
 public class Record: MonoBehaviour
 {
-    public Text logText;
     AudioSource _audio;
     /// <summary> 麥克風數量 </summary>
     int deviceCount;
     string devices;
     int sec = 90;
 
+    [SerializeField] AudioMixerGroup microPhoneMixerGruop;
+    [SerializeField] AudioMixerGroup masterMixerGruop;
+
     void Start()
     {
         _audio = GetComponent<AudioSource>();
+        SetMicroPhone();
+    }
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            StartRecord();
+        }
+
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            StopRecord();
+        }
+    }
+    
+    void PrintLog(string log)
+    {
+        Debug.Log(log);
+    }
+
+    private void SetMicroPhone()
+    {
         string[] ms = Microphone.devices;
         deviceCount = ms.Length;
 
@@ -32,33 +58,16 @@ public class Record: MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            SaveAudioData();
-        }
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            DataTest();
-        }
-    }
-
-    void PrintLog(string log)
-    {
-        Debug.Log(log);
-        logText.text = log;
-    }
-
-
     #region button event
     public void StartRecord()
     {
         _audio.Stop();
-        _audio.loop = false;
-        _audio.mute = true;
         _audio.clip = Microphone.Start(devices, false, sec, AudioSettings.outputSampleRate);
+        _audio.outputAudioMixerGroup = microPhoneMixerGruop;
         PrintLog(string.Format("開始錄音 {0} {1} {2} {3}", devices, false, sec, AudioSettings.outputSampleRate));
+
+        while (!(Microphone.GetPosition(null) > 0)) { }
+        _audio.Play();
     }
 
     public void StopRecord()
@@ -69,6 +78,7 @@ public class Record: MonoBehaviour
         }
         PrintLog("關閉錄音");
 
+        _audio.outputAudioMixerGroup = masterMixerGruop;
         EndRecording(_audio, devices);
         Microphone.End(devices);
         _audio.Stop();
@@ -93,10 +103,8 @@ public class Record: MonoBehaviour
             return;
         }
 
+        _audio.outputAudioMixerGroup = masterMixerGruop;
         PrintLog("撥放錄音:" + _audio.clip.name);
-
-        _audio.mute = false;
-        _audio.loop = false;
         _audio.Play();
     }
 
