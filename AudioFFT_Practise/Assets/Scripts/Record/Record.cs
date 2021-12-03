@@ -3,9 +3,12 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Audio;
+#if UNITY_ANDROID 
+using UnityEngine.Android;
+#endif
 
 [RequireComponent(typeof(AudioSource))]
-public class Record: MonoBehaviour
+public class Record : MonoBehaviour
 {
     AudioSource _audio;
     /// <summary> 麥克風數量 </summary>
@@ -15,6 +18,23 @@ public class Record: MonoBehaviour
 
     [SerializeField] AudioMixerGroup microPhoneMixerGruop;
     [SerializeField] AudioMixerGroup masterMixerGruop;
+
+    private void Awake()
+    {
+#if UNITY_ANDROID && UNITY_EDITOR
+        if (Permission.HasUserAuthorizedPermission(Permission.Microphone))
+        {
+            Debug.LogError("沒有麥克風權限");
+            Permission.RequestUserPermission(Permission.Microphone);
+        }
+
+        if (Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite))
+        {
+            Debug.LogError("沒有寫入權限");
+            Permission.RequestUserPermission(Permission.ExternalStorageWrite);
+        }
+#endif
+    }
 
     void Start()
     {
@@ -34,7 +54,7 @@ public class Record: MonoBehaviour
             StopRecord();
         }
     }
-    
+
     void PrintLog(string log)
     {
         Debug.Log(log);
@@ -62,6 +82,7 @@ public class Record: MonoBehaviour
     public void StartRecord()
     {
         _audio.Stop();
+        _audio.clip = null;
         _audio.clip = Microphone.Start(devices, false, sec, AudioSettings.outputSampleRate);
         _audio.outputAudioMixerGroup = microPhoneMixerGruop;
         PrintLog(string.Format("開始錄音 {0} {1} {2} {3}", devices, false, sec, AudioSettings.outputSampleRate));
@@ -113,14 +134,17 @@ public class Record: MonoBehaviour
         if (_audio.clip == null)
             return;
 
+#if UNITY_ANDROID && !UNITY_EDITOR
         if (DiskUtils.FreeSpace(true) < 30)
         {
             Debug.LogError("儲存空間不足");
             return;
         }
+#endif
 
-        PrintLog("儲存錄音:" + _audio.clip.name);
-        SaveAudioClip.Save("Level_1", _audio.clip);
+        string name = _audio.clip.name + "_" + System.DateTime.Now.ToString("yyyyMMddhhmmss");
+        PrintLog("儲存錄音:" + name);
+        SaveAudioClip.Save(name, _audio.clip);
     }
 
     public void LoadRecord()

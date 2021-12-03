@@ -218,6 +218,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &244327791
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,6 +316,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &253718309
 GameObject:
   m_ObjectHideFlags: 0
@@ -571,6 +573,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &413923684
 GameObject:
   m_ObjectHideFlags: 0
@@ -668,6 +671,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &681100319
 GameObject:
   m_ObjectHideFlags: 0
@@ -694,11 +698,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 681100319}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9aed15c3293bc1e44be419a5b2f42250, type: 3}
+  m_Script: {fileID: 11500000, guid: 4acd8dae647142a42a5e5d81e0bad3b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prb: {fileID: 5229138744643403170, guid: 2ae6c2e635d04f84f8cef6a6cc95bcb1, type: 3}
-  _maxScale: 100
+  _maxScale: 10
   FFT_Window: 0
   _samples: []
   _freoBand: []
@@ -733,9 +736,9 @@ MonoBehaviour:
   _amplitude: 0
   _amplitudeBuffer: 0
   _audioProfile: 0
-  cycle_radius: 18
-  yellowBarScale: {x: 0.2, y: 0.2, z: 0.2}
-  _buf_decrease: 0.003
+  cycle_radius: 90
+  yellowBarScale: {x: 1, y: 1, z: 1}
+  _buf_decrease: 0.005
   _buf_DesMulitiple: 1.2
   eChannel: 1
 --- !u!4 &681100322
@@ -979,6 +982,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1001402639
 GameObject:
   m_ObjectHideFlags: 0
@@ -1229,6 +1233,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1125489917
 GameObject:
   m_ObjectHideFlags: 0
@@ -1326,6 +1331,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1163204340
 GameObject:
   m_ObjectHideFlags: 0
@@ -1423,6 +1429,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1215788604
 GameObject:
   m_ObjectHideFlags: 0
@@ -1520,6 +1527,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1270674753
 GameObject:
   m_ObjectHideFlags: 0
@@ -1617,6 +1625,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1358821217
 GameObject:
   m_ObjectHideFlags: 0
@@ -1714,6 +1723,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1442005079
 GameObject:
   m_ObjectHideFlags: 0
@@ -1891,6 +1901,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1564233084
 GameObject:
   m_ObjectHideFlags: 0
@@ -1988,6 +1999,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1789013744
 GameObject:
   m_ObjectHideFlags: 0
@@ -2085,6 +2097,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1801777387
 GameObject:
   m_ObjectHideFlags: 0
@@ -2182,6 +2195,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1896125998
 GameObject:
   m_ObjectHideFlags: 0
@@ -2279,6 +2293,7 @@ MonoBehaviour:
   _scaleMultiplier: 8
   _uesBuffer: 1
   _material: {fileID: 0}
+  _emisionValue: 2
 --- !u!1 &1968038757
 GameObject:
   m_ObjectHideFlags: 0
@@ -2295,7 +2310,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1968038758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2305,12 +2320,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1968038757}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9aed15c3293bc1e44be419a5b2f42250, type: 3}
+  m_Script: {fileID: 11500000, guid: 4acd8dae647142a42a5e5d81e0bad3b1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prb: {fileID: 5229138744643403170, guid: 2ae6c2e635d04f84f8cef6a6cc95bcb1, type: 3}
-  _maxScale: 100
-  FFT_Window: 1
+  _maxScale: 10
+  FFT_Window: 0
   _samples: []
   _freoBand: []
   _bandBuffer: []
@@ -2344,8 +2358,8 @@ MonoBehaviour:
   _amplitude: 0
   _amplitudeBuffer: 0
   _audioProfile: 0
-  cycle_radius: 18
-  yellowBarScale: {x: 0.2, y: 0.2, z: 0.2}
+  cycle_radius: 90
+  yellowBarScale: {x: 1, y: 1, z: 1}
   _buf_decrease: 0.005
   _buf_DesMulitiple: 1.2
   eChannel: 2

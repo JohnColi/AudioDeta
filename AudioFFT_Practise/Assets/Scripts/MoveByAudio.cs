@@ -5,10 +5,19 @@ using UnityEngine;
 public class MoveByAudio : MonoBehaviour
 {
     public OutputDataVsSpectrumData _outputDataVsSpectrumData;
-    [Range(1f,10f)]
-    public float _force ;
+    [Range(1f, 10f)]
+    public float _force;
     [Range(-180f, 0)]
     public float dB_Threshold = -30f;
+
+    Material _material;
+    Color ori_Color;
+
+    private void Start()
+    {
+        _material = GetComponent<MeshRenderer>().material;
+        ori_Color = _material.GetColor("_AlbdeoColor");
+    }
 
     private void Update()
     {
@@ -29,6 +38,10 @@ public class MoveByAudio : MonoBehaviour
 
             transform.Translate(Vector3.right * Time.deltaTime);
         }
+
+        float factor = Mathf.Pow(2, (_outputDataVsSpectrumData.dbValue + 180) / 180 * 1);
+        Color c = ori_Color * factor;
+        _material.SetColor("_AlbdeoColor", c);
     }
 
     float hightest;

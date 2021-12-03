@@ -16,9 +16,9 @@ public class AudioRawDataBar : MonoBehaviour
 
     RectTransform[] bars;
 
-    [HideInInspector] public float[] _samples_Stereo;
-    [HideInInspector] public float[] _samples_Left;
-    [HideInInspector] public float[] _samples_Right;
+    public float[] _samples_Stereo;
+    public float[] _samples_Left;
+    public float[] _samples_Right;
     [HideInInspector] public float[] _samples;
 
     private int spectrumDtatSize;

@@ -37,6 +37,7 @@ public class SaveAudioClip
             filename += ".wav";
 
         path = Path.Combine(path, filename);
+        Debug.Log(path);
 
         // Make sure directory exists if user is saving to sub dir.
         Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -50,14 +51,14 @@ public class SaveAudioClip
         Debug.Log("儲存錄音:" + filename);
 
         // TODO: return false if there's a failure saving the file
-        return true; 
+        return true;
     }
 
     public static bool Delete(string filename)
     {
         return Delete(filename, audioPath);
     }
-    
+
     public static bool Delete(string filename, string path)
     {
         if (!filename.ToLower().EndsWith(".wav"))
@@ -104,15 +105,15 @@ public class SaveAudioClip
             callback(clip);
     }
 
-    public static void LoadAudio(string fileName, Action<AudioClip,int> callback, int index)
+    public static void LoadAudio(string fileName, Action<AudioClip, int> callback, int index)
     {
         string path = audioPath;
         path = Path.Combine(path, fileName);
 
-        Observable.FromCoroutine(_ => LoadAudioClip(path, callback , index)).Subscribe();
+        Observable.FromCoroutine(_ => LoadAudioClip(path, callback, index)).Subscribe();
     }
 
-    static private IEnumerator LoadAudioClip(string path, Action<AudioClip,int> callback , int index)
+    static private IEnumerator LoadAudioClip(string path, Action<AudioClip, int> callback, int index)
     {
         Debug.Log("Load Path : " + path);
         //Android need add file://
@@ -160,8 +161,7 @@ public class SaveAudioClip
         for (int i = 0; i < samples.Length; i++)
         {
             intData[i] = (short)(samples[i] * rescaleFactor);
-            Byte[] byteArr = new Byte[2];
-            byteArr = BitConverter.GetBytes(intData[i]);
+            byte[] byteArr = BitConverter.GetBytes(intData[i]);
             byteArr.CopyTo(bytesData, i * 2);
         }
 
@@ -176,9 +176,11 @@ public class SaveAudioClip
 
         fileStream.Seek(0, SeekOrigin.Begin);
 
+        //Resource Interchange File Format
         Byte[] riff = System.Text.Encoding.UTF8.GetBytes("RIFF");
         fileStream.Write(riff, 0, 4);
 
+        //
         Byte[] chunkSize = BitConverter.GetBytes(fileStream.Length - 8);
         fileStream.Write(chunkSize, 0, 4);
 
@@ -192,7 +194,7 @@ public class SaveAudioClip
         fileStream.Write(subChunk1, 0, 4);
 
         UInt16 two = 2;
-        UInt16 one = 1;
+        UInt16 one = 1; //PCM格式
 
         Byte[] audioFormat = BitConverter.GetBytes(one);
         fileStream.Write(audioFormat, 0, 2);
