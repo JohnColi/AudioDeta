@@ -31,15 +31,15 @@ public class JumpObjectManager : IStageManager
             tempPitch.Add(_outputDataVsSpectrumData.pitchValue);
 
             float p;
-            if (tempPitch.Count > 1 && tempPitch[tempPitch.Count - 1] > tempPitch[tempPitch.Count - 2])
-            {
-                float sum = 0;
-                int count = Mathf.Min(tempPitch.Count, upAverageCount);
-                for (int i = 0; i < count; i++)
-                    sum += tempPitch[i];
-                p = sum / upAverageCount;
-            }
-            else
+            //if (tempPitch.Count > 1 && tempPitch[tempPitch.Count - 1] > tempPitch[tempPitch.Count - 2])
+            //{
+            //    float sum = 0;
+            //    int count = Mathf.Min(tempPitch.Count, upAverageCount);
+            //    for (int i = 0; i < count; i++)
+            //        sum += tempPitch[i];
+            //    p = sum / upAverageCount;
+            //}
+            //else
             {
                 float sum = 0;
                 foreach (var f in tempPitch)
@@ -52,7 +52,7 @@ public class JumpObjectManager : IStageManager
 
             float y = low_y + ((hight_y - low_y) * (p - min_hz) / (max_hz - min_hz));
             var v2 = pitchObject.position;
-            v2.y = y;
+            v2.y = Mathf.Lerp(v2.y, y, lerpT);
             v2.x += Time.deltaTime * speed;
             if (v2.x > 8.5f) v2.x = -8.5f;
             pitchObject.position = v2;

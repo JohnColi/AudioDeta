@@ -7,34 +7,26 @@ using UnityEngine.UI;
 public class OutputDataVsSpectrumData : MonoBehaviour
 {
     public AudioSource _audio;
-    public bool ifShowBar;
     public Text display; // drag a GUIText here to show results
-
-    //[Header("Bar")]
-    //public Image rmsBar;
-    //public Image dbBar;
-    //public Image pitchBar;
-
-    //[Header("Buffer Bar")]
-    //public Image buf_rmsBar;
-    //public Image buf_dbBar;
-    //public Image buf_pitchBar;
 
     int qSamples = 1024;  // array size
     float refValue = 0.1f; // RMS value for 0 dB
     [Range(0.01f, 0.06f)]
     public float threshold = 0.02f;      // minimum amplitude to extract pitch
-    /// <summary>
-    /// poople voice hz ~1200hz
-    /// </summary>
-    public float hzHigh = 1200f;
-    private int getSampleSize;
+
+    /// <summary> poople voice hz ~1200hz </summary>
+    public float maxHz = 1200f;
+    public float minHz = 0f;
+
+    private int maxSampleSize;
+    private int minSampleSize;
 
     [HideInInspector] public float rmsValue;   // sound level - RMS
     [HideInInspector] public float dbValue;    // sound level - dB
     [HideInInspector] public float pitchValue; // sound pitch - Hz
+    [HideInInspector] public float volumeValue;
 
-    private float[] samples; // audio samples
+    private float[] outputSamples; // audio samples
     [SerializeField] private float[] spectrum; // audio spectrum
     private float fSample;
 
@@ -45,47 +37,53 @@ public class OutputDataVsSpectrumData : MonoBehaviour
     public float _buf_DesMulitiple = 1.2f;
 
 
-
-    [HideInInspector] public float rmsBuffer = 0;
+    [HideInInspector]
+    public float rmsBuffer = 0;
     float rmsBufferDecrease;
 
-    [HideInInspector] public float dbBuffer = -180;
+    [HideInInspector]
+    public float dbBuffer = -160;
     float dbBufferDecrease = 0;
 
-    [HideInInspector] public float pitchBuffer = 0;
+    [HideInInspector]
+    public float pitchBuffer = 0;
     float pitchBufferDecrease = 0;
 
+    [HideInInspector]
+    public float volumeBuffer = 0;
+    float volumeBufferDecrease = 0;
 
     private void Start()
     {
-        samples = new float[qSamples];
+        outputSamples = new float[qSamples];
         spectrum = new float[qSamples];
         fSample = AudioSettings.outputSampleRate;   //48000
     }
 
     private void AnalyzeSound()
     {
-        _audio.GetOutputData(samples, 0); // fill array with samples
+        float perSize = (fSample / 2) / qSamples;
+        maxSampleSize = (int)(maxHz / perSize + 1);
+        minSampleSize = (int)(minHz / perSize);
+
+        // get rms and dB
+        _audio.GetOutputData(outputSamples, 0); // fill array with samples
 
         float sum = 0;
-        for (int i = 0; i < qSamples; i++)
+        for (int i = minSampleSize; i < maxSampleSize; i++)
         {
-            sum += samples[i] * samples[i]; // sum squared samples
+            sum += outputSamples[i] * outputSamples[i]; // sum squared samples
         }
-        rmsValue = Mathf.Sqrt(sum / qSamples); // rms = square root of average
+        rmsValue = Mathf.Sqrt(sum / (maxSampleSize - minSampleSize)); // rms = square root of average
         dbValue = 20 * Mathf.Log10(rmsValue / refValue); // calculate dB
         if (dbValue < -160) dbValue = -160; // clamp it to -160dB min
 
-        // get sound spectrum
+
+        // get voice pitch
         _audio.GetSpectrumData(spectrum, 0, FFTWindow.BlackmanHarris);
-
-        float perSize = (fSample / 2) / qSamples;
-        getSampleSize = (int)(hzHigh / perSize + 1);
-
-        //get voice pitch
         float maxV = 0;
         int maxN = 0;
-        for (int i = 0; i < getSampleSize; i++)
+        for (int i = 0; i < maxSampleSize; i++)
         { // find max 
             if (spectrum[i] > maxV && spectrum[i] > threshold)
             {
@@ -94,7 +92,7 @@ public class OutputDataVsSpectrumData : MonoBehaviour
             }
         }
         float freqN = maxN; // pass the index to a float variable
-        if (maxN > 0 && maxN < getSampleSize - 1)
+        if (maxN > 0 && maxN < maxSampleSize - 1)
         {
             // interpolate index using neighbours
             var dL = spectrum[maxN - 1] / spectrum[maxN];
@@ -102,6 +100,11 @@ public class OutputDataVsSpectrumData : MonoBehaviour
             freqN += 0.5f * (dR * dR - dL * dL);
         }
         pitchValue = freqN * ((fSample / 2) / qSamples); // convert index to frequency
+    }
+
+    private void BandVol()
+    {
+        volumeValue = BandVol(0f, maxHz);
     }
 
     private float BandVol(float fLow, float fHigh)
@@ -125,22 +128,13 @@ public class OutputDataVsSpectrumData : MonoBehaviour
 
     private void Update()
     {
-        //if (Input.GetKeyDown(KeyCode.P))
-        //{
-        //    _audio.Play();
-        //}
-        //if (Input.GetKeyDown(KeyCode.S))
-        //{
-        //    _audio.Stop();
-        //}
-
         AnalyzeSound();
+        BandVol();
         BuffSound();
-        var bandVol = BandVol(20f, 1200f);
 
         if (display)
         {
-            string hz = "~" + (getSampleSize * (fSample / 2) / qSamples);
+            string hz = "~" + (maxSampleSize * (fSample / 2) / qSamples);
 
             string nor = "RMS: " + rmsValue.ToString("F2") +
             " (" + dbValue.ToString("F1") + " dB)\n" +
@@ -150,7 +144,7 @@ public class OutputDataVsSpectrumData : MonoBehaviour
             " (" + dbBuffer.ToString("F1") + " dB)\n" +
             "Pitch: " + pitchBuffer.ToString("F0") + " Hz\n";
 
-            display.text = "bandVol : " + bandVol + "\n" + hz + "\n" + nor;
+            display.text = "bandVol : " + volumeValue + "\n" + hz + "\n" + nor;
         }
     }
 
@@ -191,6 +185,18 @@ public class OutputDataVsSpectrumData : MonoBehaviour
         {
             pitchBuffer -= pitchBufferDecrease;
             pitchBufferDecrease *= _buf_DesMulitiple;
+        }
+
+        // volume+
+        if (volumeValue > volumeBuffer)
+        {
+            volumeBuffer = volumeValue;
+            volumeBufferDecrease = _buf_decrease;
+        }
+        if (volumeValue < volumeBuffer)
+        {
+            volumeBuffer -= volumeBufferDecrease;
+            volumeBufferDecrease *= _buf_DesMulitiple;
         }
     }
 }

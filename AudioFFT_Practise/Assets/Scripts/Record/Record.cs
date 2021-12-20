@@ -134,14 +134,6 @@ public class Record : MonoBehaviour
         if (_audio.clip == null)
             return;
 
-#if UNITY_ANDROID && !UNITY_EDITOR
-        if (DiskUtils.FreeSpace(true) < 30)
-        {
-            Debug.LogError("儲存空間不足");
-            return;
-        }
-#endif
-
         string name = _audio.clip.name + "_" + System.DateTime.Now.ToString("yyyyMMddhhmmss");
         PrintLog("儲存錄音:" + name);
         SaveAudioClip.Save(name, _audio.clip);

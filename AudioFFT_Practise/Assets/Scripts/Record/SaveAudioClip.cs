@@ -168,6 +168,7 @@ public class SaveAudioClip
         fileStream.Write(bytesData, 0, bytesData.Length);
     }
 
+    
     static void WriteHeader(FileStream fileStream, AudioClip clip)
     {
         int hz = clip.frequency;
@@ -176,48 +177,58 @@ public class SaveAudioClip
 
         fileStream.Seek(0, SeekOrigin.Begin);
 
+        //區塊編號
         //Resource Interchange File Format
-        Byte[] riff = System.Text.Encoding.UTF8.GetBytes("RIFF");
+        byte[] riff = System.Text.Encoding.UTF8.GetBytes("RIFF");
         fileStream.Write(riff, 0, 4);
 
-        //
-        Byte[] chunkSize = BitConverter.GetBytes(fileStream.Length - 8);
+        //總區塊大小
+        byte[] chunkSize = BitConverter.GetBytes(fileStream.Length - 8);
         fileStream.Write(chunkSize, 0, 4);
 
-        Byte[] wave = System.Text.Encoding.UTF8.GetBytes("WAVE");
+        //檔案格式
+        byte[] wave = System.Text.Encoding.UTF8.GetBytes("WAVE");
         fileStream.Write(wave, 0, 4);
 
-        Byte[] fmt = System.Text.Encoding.UTF8.GetBytes("fmt ");
+        //子區塊1標籤
+        byte[] fmt = System.Text.Encoding.UTF8.GetBytes("fmt");
         fileStream.Write(fmt, 0, 4);
 
-        Byte[] subChunk1 = BitConverter.GetBytes(16);
+        //子區塊1大小
+        byte[] subChunk1 = BitConverter.GetBytes(16);
         fileStream.Write(subChunk1, 0, 4);
 
-        UInt16 two = 2;
+        //音訊格式
         UInt16 one = 1; //PCM格式
-
-        Byte[] audioFormat = BitConverter.GetBytes(one);
+        byte[] audioFormat = BitConverter.GetBytes(one);
         fileStream.Write(audioFormat, 0, 2);
 
-        Byte[] numChannels = BitConverter.GetBytes(channels);
+        //聲道數量
+        byte[] numChannels = BitConverter.GetBytes(channels);
         fileStream.Write(numChannels, 0, 2);
 
-        Byte[] sampleRate = BitConverter.GetBytes(hz);
+        //取樣頻率(Hz)
+        byte[] sampleRate = BitConverter.GetBytes(hz);
         fileStream.Write(sampleRate, 0, 4);
 
-        Byte[] byteRate = BitConverter.GetBytes(hz * channels * 2); // sampleRate * bytesPerSample*number of channels, here 44100*2*2
+        //位元(組)率 , 取樣頻率 * 位元深度 / 8
+        byte[] byteRate = BitConverter.GetBytes(hz * channels * 2); // sampleRate * bytesPerSample*number of channels, here 44100*2*2
         fileStream.Write(byteRate, 0, 4);
 
+        //區塊對齊
         UInt16 blockAlign = (ushort)(channels * 2);
         fileStream.Write(BitConverter.GetBytes(blockAlign), 0, 2);
 
+        //位元深度
         UInt16 bps = 16;
         Byte[] bitsPerSample = BitConverter.GetBytes(bps);
         fileStream.Write(bitsPerSample, 0, 2);
 
+        //子區塊2標籤
         Byte[] datastring = System.Text.Encoding.UTF8.GetBytes("data");
         fileStream.Write(datastring, 0, 4);
 
+        //子區塊2大小
         Byte[] subChunk2 = BitConverter.GetBytes(samples * channels * 2);
         fileStream.Write(subChunk2, 0, 4);
     }
