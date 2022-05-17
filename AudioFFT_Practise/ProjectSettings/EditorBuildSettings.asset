@@ -5,7 +5,10 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
+  - enabled: 0
+    path: Assets/Scenes/GetPeopleVoice.unity
+    guid: e5a3ed7cad53ec448804b293f06584a4
   - enabled: 1
-    path: Assets/Scenes/AudioBands.unity
-    guid: 8a454af35c80d5c41bb860670c447df0
+    path: Assets/Scenes/VoiceStageGame.unity
+    guid: 1060c058adb4bd445a87deeba638a5c7
   m_configObjects: {}

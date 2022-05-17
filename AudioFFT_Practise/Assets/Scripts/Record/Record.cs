@@ -19,6 +19,14 @@ public class Record : MonoBehaviour
     [SerializeField] AudioMixerGroup microPhoneMixerGruop;
     [SerializeField] AudioMixerGroup masterMixerGruop;
 
+    public ESampleRate sampleRate = ESampleRate._8000;
+    public enum ESampleRate
+    {
+        _8000 = 8000,
+        _16000 = 16000,
+        _48000 = 48000,
+    }
+
     private void Awake()
     {
 #if UNITY_ANDROID && UNITY_EDITOR
@@ -42,19 +50,6 @@ public class Record : MonoBehaviour
         SetMicroPhone();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            StartRecord();
-        }
-
-        if (Input.GetKeyDown(KeyCode.A))
-        {
-            StopRecord();
-        }
-    }
-
     void PrintLog(string log)
     {
         Debug.Log(log);
@@ -73,8 +68,7 @@ public class Record : MonoBehaviour
         else
         {
             devices = ms[0];
-            PrintLog("麥克風 : " + deviceCount);
-            PrintLog("devices : " + devices);
+            PrintLog(string.Format("麥克風數量:{0}, devices:{1}", deviceCount, devices));
         }
     }
 
@@ -83,9 +77,12 @@ public class Record : MonoBehaviour
     {
         _audio.Stop();
         _audio.clip = null;
-        _audio.clip = Microphone.Start(devices, false, sec, AudioSettings.outputSampleRate);
         _audio.outputAudioMixerGroup = microPhoneMixerGruop;
-        PrintLog(string.Format("開始錄音 {0} {1} {2} {3}", devices, false, sec, AudioSettings.outputSampleRate));
+
+        //int sampleRate = AudioSettings.outputSampleRate;
+        int sampleRate = (int)this.sampleRate;
+        _audio.clip = Microphone.Start(devices, false, sec, sampleRate);
+        PrintLog(string.Format("開始錄音 {0} {1} {2} {3}", devices, false, sec, sampleRate));
 
         while (!(Microphone.GetPosition(null) > 0)) { }
         _audio.Play();

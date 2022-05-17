@@ -168,7 +168,7 @@ public class SaveAudioClip
         fileStream.Write(bytesData, 0, bytesData.Length);
     }
 
-    
+
     static void WriteHeader(FileStream fileStream, AudioClip clip)
     {
         int hz = clip.frequency;
@@ -191,7 +191,7 @@ public class SaveAudioClip
         fileStream.Write(wave, 0, 4);
 
         //子區塊1標籤
-        byte[] fmt = System.Text.Encoding.UTF8.GetBytes("fmt");
+        Byte[] fmt = System.Text.Encoding.UTF8.GetBytes("fmt ");
         fileStream.Write(fmt, 0, 4);
 
         //子區塊1大小
